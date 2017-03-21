@@ -52,9 +52,44 @@ public class ShaderHelper {
 
 
     public static int linkProgram(int vertexShaderId, int fragmentShaderId) {
+        final int programObjectId = glCreateProgram(); //Create a new OpenGL Program and return the object id
+        if (programObjectId == 0) {
+            if (LoggerConfig.ON) {
+                Log.w(TAG, "Could not create new program");
+            }
+            return 0;
+        }
+        //The lower two lines combine vertextShader and fragment shader. each manually attached with programObjectID
+
+        glAttachShader(programObjectId, vertexShaderId);
+        glAttachShader(programObjectId, fragmentShaderId);
+
+        //now linking two shader
+        glLinkProgram(programObjectId);
+
+        final int[] linkStatus = new int[1];
+        glGetProgramiv(programObjectId, GL_LINK_STATUS, linkStatus, 0);
+
+        if (LoggerConfig.ON) {
+            // Print the program info log to the Android log output.
+            Log.v(TAG, "Results of linking program:\n"
+                    + glGetProgramInfoLog(programObjectId));
+        }
 
 
-        return 0;
+        if (linkStatus[0] == 0) {
+            // If it failed, delete the program object.
+            glDeleteProgram(programObjectId);
+            if (LoggerConfig.ON) {
+                Log.w(TAG, "Linking of program failed.");
+            }
+            return 0;
+        }
+
+
+        return programObjectId;
+
+
     }
 
 
